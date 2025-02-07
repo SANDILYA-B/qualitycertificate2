@@ -1,0 +1,131 @@
+using {com.satinfotech.quality as quality} from '../db/schema';
+
+using { API_INSPECTIONLOT_SRV as inspect } from './external/API_INSPECTIONLOT_SRV';
+using { API_OUTBOUND_DELIVERY_SRV_0002 as outbound } from './external/API_OUTBOUND_DELIVERY_SRV_0002';
+
+service qualitycertificate {
+     entity inslot as projection on inspect.A_InspectionLot {
+          key InspectionLot,
+          InspectionLotObjectText,
+          SalesOrder,
+          SalesOrderItem,
+          Material,
+          Batch
+     } 
+
+    entity inschar as projection on inspect.A_InspectionCharacteristic {
+          key InspectionLot,
+          InspectionCharacteristic,
+          InspectionSpecification,
+     }
+
+     entity insres as projection on inspect.A_InspectionResult {
+          key InspectionLot,
+          InspectionResultMeanValue,
+          InspectionResultMinimumValue,
+          InspectionResultMaximumValue,
+     }
+ 
+
+     entity obitem as projection on outbound.A_OutbDeliveryItem {
+          key DeliveryDocument,
+          DeliveryDocumentItem,
+          ReferenceSDDocument,
+          ReferenceSDDocumentItem,
+          Material,
+     }  
+
+     entity obaddr as projection on outbound.A_OutbDeliveryAddress2 {
+          key DeliveryDocument,
+          BusinessPartnerName1,
+          StreetName,
+          CityName,
+          Region,
+          Country,
+          PostalCode
+     } 
+
+    entity quality1 as projection on quality.quality1{
+        *
+    } actions{
+        action printForm() returns String
+    };
+
+    entity numberrange as projection on quality.numberrange;
+};
+
+annotate qualitycertificate.quality1 with @odata.draft.enabled;
+annotate qualitycertificate.numberrange with @odata.draft.enabled;
+    
+   annotate qualitycertificate.quality1 with @(
+        
+        UI.LineItem: [
+        {
+            $Type: 'UI.DataField',
+            Value: tcnumber
+        },
+        {
+            $Type: 'UI.DataField',
+            Value: obdel
+        },
+        {
+            $Type: 'UI.DataField',
+            Value: obdelitem
+        },
+
+    ],
+    UI.SelectionFields: [ obdel, obdelitem ]
+    );
+
+    annotate qualitycertificate.quality1 with @(
+    UI.FieldGroup #GeneratedGroup : {
+        $Type : 'UI.FieldGroupType',
+        Data : [
+            {
+                $Type : 'UI.DataField',
+                Value : tcnumber,
+            },
+            {
+                $Type : 'UI.DataField',
+                Value : obdel,
+            },
+            {
+                $Type : 'UI.DataField',
+                Value : obdelitem,
+            },
+        ],
+    },
+    UI.Facets : [
+        {
+            $Type : 'UI.ReferenceFacet',
+            ID : 'GeneratedFacet1',
+            Label : 'General Information',
+            Target : '@UI.FieldGroup#GeneratedGroup',
+        },
+    ]
+);
+
+annotate quality.quality1 with {
+    obdel @(Common.ValueList: {
+        Label         : 'Purchase Order Items',
+        CollectionPath: 'obitem',
+        Parameters    : [
+            {
+                $Type            : 'Common.ValueListParameterInOut',
+                LocalDataProperty: 'obdel',
+                ValueListProperty: 'DeliveryDocument'
+            },
+            {
+                $Type            : 'Common.ValueListParameterInOut',
+                LocalDataProperty: 'obdelitem',
+                ValueListProperty: 'DeliveryDocumentItem'
+            },
+            {
+                $Type            : 'Common.ValueListParameterDisplayOnly',
+                ValueListProperty: 'Material'
+            },
+
+        ]
+    });
+}
+ 

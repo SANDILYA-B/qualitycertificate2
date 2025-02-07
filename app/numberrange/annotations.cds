@@ -1,0 +1,1 @@
+using qualitycertificate as service from '../../srv/qual';
