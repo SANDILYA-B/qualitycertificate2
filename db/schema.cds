@@ -2,18 +2,13 @@ namespace com.satinfotech.quality;
 using {managed,cuid} from '@sap/cds/common';
 
 entity quality1 : cuid,managed{ 
-
-      @title: 'TC Number'
-      tcnumber : String(80) @readonly;
-
-      @title: 'OutBound Delivery'
-      obdel : String(80);
-
-      @title: 'OutBound Delivery Item'
-      obdelitem : String(80);
+    @title: 'TC Number'
+    certno: String(10) @readonly;
+    @title: 'Delivery Number'
+    outbound: String(10);
+    @title: 'Delivery Number Item'
+    outbounditem: String(6);
 }
-
-
 
 entity numberrange: managed, cuid {
     @title: 'Object name'

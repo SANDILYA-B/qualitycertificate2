@@ -51,30 +51,30 @@ service qualitycertificate {
         action printForm() returns String
     };
 
-    entity numberrange as projection on quality.numberrange;
+    entity NumberRange as projection on quality.numberrange;
 };
 
 annotate qualitycertificate.quality1 with @odata.draft.enabled;
-annotate qualitycertificate.numberrange with @odata.draft.enabled;
+annotate qualitycertificate.NumberRange with @odata.draft.enabled;
     
    annotate qualitycertificate.quality1 with @(
         
         UI.LineItem: [
         {
             $Type: 'UI.DataField',
-            Value: tcnumber
+            Value: certno
         },
         {
             $Type: 'UI.DataField',
-            Value: obdel
+            Value: outbound
         },
         {
             $Type: 'UI.DataField',
-            Value: obdelitem
+            Value: outbounditem
         },
 
     ],
-    UI.SelectionFields: [ obdel, obdelitem ]
+    UI.SelectionFields: [ outbound, outbounditem ]
     );
 
     annotate qualitycertificate.quality1 with @(
@@ -83,15 +83,15 @@ annotate qualitycertificate.numberrange with @odata.draft.enabled;
         Data : [
             {
                 $Type : 'UI.DataField',
-                Value : tcnumber,
+                Value : certno,
             },
             {
                 $Type : 'UI.DataField',
-                Value : obdel,
+                Value : outbound,
             },
             {
                 $Type : 'UI.DataField',
-                Value : obdelitem,
+                Value : outbounditem,
             },
         ],
     },
@@ -106,18 +106,18 @@ annotate qualitycertificate.numberrange with @odata.draft.enabled;
 );
 
 annotate quality.quality1 with {
-    obdel @(Common.ValueList: {
+    outbound @(Common.ValueList: {
         Label         : 'Purchase Order Items',
         CollectionPath: 'obitem',
         Parameters    : [
             {
                 $Type            : 'Common.ValueListParameterInOut',
-                LocalDataProperty: 'obdel',
+                LocalDataProperty: 'outbound',
                 ValueListProperty: 'DeliveryDocument'
             },
             {
                 $Type            : 'Common.ValueListParameterInOut',
-                LocalDataProperty: 'obdelitem',
+                LocalDataProperty: 'outbounditem',
                 ValueListProperty: 'DeliveryDocumentItem'
             },
             {

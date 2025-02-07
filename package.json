@@ -19,8 +19,7 @@
   },
   "scripts": {
     "start": "cds-serve",
-    "watch-qualitycertificate": "cds watch --open qualitycertificate/webapp/index.html?sap-ui-xx-viewCache=false",
-    "watch-numberrange": "cds watch --open numberrange/webapp/index.html?sap-ui-xx-viewCache=false"
+    "watch-qualitycertificate": "cds watch --open qualitycertificate/webapp/index.html?sap-ui-xx-viewCache=false"
   },
   "cds": {
     "requires": {
@@ -39,7 +38,6 @@
     }
   },
   "sapux": [
-    "app/qualitycertificate",
-    "app/numberrange"
+    "app/qualitycertificate"
   ]
 }
