@@ -6,60 +6,126 @@ module.exports = cds.service.impl(async function () {
   const outbound = await cds.connect.to("API_OUTBOUND_DELIVERY_SRV_0002");
   const { quality1, numberrange } = this.entities;
 
-  this.on("READ", "inslot", async (req) => inspect.run(req.query));
-  this.on("READ", "inschar", async (req) => inspect.run(req.query));
-  this.on("READ", "insres", async (req) => inspect.run(req.query));
-  this.on("READ", "obitem", async (req) => outbound.run(req.query));
-  this.on("READ", "obaddr", async (req) => outbound.run(req.query));
+  this.on('READ', 'inslot', async (req) => {
+    return await inspect.run(req.query);
+  });
+
+  this.on('READ', 'inschar', async (req) => {
+    return await inspect.run(req.query);
+  });
+
+  this.on('READ', 'insres', async (req) => {
+    return await inspect.run(req.query);
+  });
+
+  this.on('READ', 'obitem', async (req) => {
+    return await outbound.run(req.query);
+  });
+
+  this.on('READ', 'obaddr', async (req) => {
+    return await outbound.run(req.query);
+  });
 
   this.before('CREATE', 'quality1', async req => {
     const { NumberRange } = this.entities;
-    let nquery = SELECT.from(NumberRange).where({object_name: 'outboundqc'});
+    let nquery = SELECT.from(NumberRange).where({ object_name: 'outboundqc' });
     res = await cds.run(nquery);
-    if(res.length==1){ // If the requested object exists.
-        if(res[0].current_num){
-            new_num = Number(res[0].current_num) + 1
-        }else{
-            new_num = Number(res[0].from_num) + 1
-        }
-        updqry = UPDATE(NumberRange).data({current_num: new_num}).where({object_name: 'outboundqc'});
-        await cds.run(updqry);
-        req.data.certno=String(new_num);
-    }else{
-        req.error({'code': 'NOOUTBNUM',message:'Outbound Number Not Set,Please set the Number Range'});
+    if (res.length == 1) {
+      if (res[0].current_num) {
+        new_num = Number(res[0].current_num) + 1
+      } else {
+        new_num = Number(res[0].from_num) + 1
+      }
+      updqry = UPDATE(NumberRange).data({ current_num: new_num }).where({ object_name: 'outboundqc' });
+      await cds.run(updqry);
+      req.data.certno = String(new_num);
+    } else {
+      req.error({ 'code': 'NOOUTBNUM', message: 'Outbound Number Not Set,Please set the Number Range' });
     }
   });
 
   this.on('printForm', 'quality1', async (req) => {
-    const { inslot,inschar,insres,obitem,obaddr, } = this.entities;
-    let nquery = SELECT.from(quality1).where({ID: req.params[0].ID});
-    let res = await cds.run(nquery);
+    try {
+      const { inslot, inschar, insres, obitem, obaddr } = this.entities;
 
-    let inslotqry = SELECT.from(inslot).where({inspection_lot: res[0].inspection_lot});
-    let inslotres = await cds.run(inslotqry);
+      console.log("Request Params--->", req.params[0]);
 
-    let inscharqry = SELECT.from(inschar).where({inspection_lot: res[0].inspection_lot});
-    let inscharres = await cds.run(inscharqry);
+      const out_ids = req.params[0].ID;
 
-    let insresqry = SELECT.from(insres).where({inspection_lot: res[0].inspection_lot});
-    let insresres = await cds.run(insresqry);
+      console.log("Outbound ID--->", out_ids);
 
-    let obitemqry = SELECT.from(obitem).where({delivery: res[0].delivery});
-    let obitemres = await cds.run(obitemqry);
+      const post = await cds.run(SELECT.from(quality1).where({ ID: out_ids }));
 
-    let obaddrqry = SELECT.from(obaddr).where({delivery: res[0].delivery});
-    let obaddrres = await cds.run(obaddrqry);
+      console.log("Post Data--->", post);
 
-    let xmlData = {
-      "inspection_lot": res[0],
-      "inslot": inslotres,
-      "inschar": inscharres,
-      "insres": insresres,
-      "obitem": obitemres,
-      "obaddr": obaddrres
-    };
+      const outboundtId = post[0].outbound;
+      const outboundItem = post[0].outbounditem;
 
-    return XMLBuilder.buildObject(xmlData);
-    
+      // Fetch Outbound Item Data
+      const obItemQuery = await outbound.run(
+        SELECT.from(obitem).where({ DeliveryDocument: outboundtId, DeliveryDocumentItem: outboundItem })
+      );
+
+      if (!obItemQuery.length) {
+        return req.error(404, "Outbound item not found");
+      }
+
+      const { ReferenceSDDocument, ReferenceSDDocumentItem } = obItemQuery[0];
+
+      // Fetch Inspection Lot Data
+      const insLotQuery = await inspect.run(
+        SELECT.from(inslot).where({ SalesOrder: ReferenceSDDocument, SalesOrderItem: ReferenceSDDocumentItem })
+      );
+
+      if (!insLotQuery.length) {
+        return req.error(404, "Inspection Lot not found");
+      }
+
+      // Map Inspection Lot Data with Characteristics and Results
+      const inspectionLots = await Promise.all(insLotQuery.map(async (lot) => {
+        const inspectionLotId = lot.InspectionLot;
+
+        const insCharQuery = await inspect.run(
+          SELECT.from(inschar).where({ InspectionLot: inspectionLotId })
+        );
+
+        const insResQuery = await inspect.run(
+          SELECT.from(insres).where({ InspectionLot: inspectionLotId })
+        );
+
+        return {
+          ...lot,
+          InspectionCharacteristics: insCharQuery.length ? insCharQuery : {},
+          InspectionResults: insResQuery.length ? insResQuery : {}
+        };
+      }));
+
+      // Fetch Outbound Address Data
+      const obAddrQuery = await outbound.run(
+        SELECT.from(obaddr).where({ DeliveryDocument: outboundtId })
+      );
+
+      // Construct XML Data
+      const xmlData = {
+        QualityCertificate: {
+          OutboundAddress: obAddrQuery.length ? obAddrQuery[0] : {},
+          InspectionLots: inspectionLots.length ? inspectionLots : {},
+          OutboundItem: obItemQuery[0],
+        }
+      };
+
+      // Convert JSON to XML
+      const xmlBuilder = new XMLBuilder({ format: true });
+      const xmlOutput = xmlBuilder.build(xmlData);
+
+      console.log("Generated XML:", xmlOutput);
+      return xmlOutput;
+
+    } catch (error) {
+      console.error("Error generating XML:", error);
+      return req.error(500, "Error generating XML");
+    }
   });
+
+
 });

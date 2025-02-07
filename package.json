@@ -6,6 +6,7 @@
   "license": "UNLICENSED",
   "private": true,
   "dependencies": {
+    "@cap-js/postgres": "^1.11.0",
     "@sap-cloud-sdk/http-client": "^3.26.0",
     "@sap-cloud-sdk/resilience": "^3.26.0",
     "@sap/cds": "^7",

@@ -1,84 +1,59 @@
 sap.ui.define([
     "sap/m/MessageToast",
-    "sap/ui/model/json/JSONModel",
     "sap/m/Dialog",
-    "sap/m/Button",
-    "sap/ui/core/HTML"
-], function(MessageToast, JSONModel, Dialog, Button, HTML) {
+    "sap/m/Text",
+    "sap/m/TextArea",
+    "sap/m/Button"
+], function (MessageToast, Dialog, Text, TextArea, Button) {
     'use strict';
 
     return {
-        printXml: function(oBindingContext, aSelectedContexts) {
+        printXml: function (oBindingContext, aSelectedContexts) {
+            MessageToast.show("Custom handler invoked.");
+            console.log(aSelectedContexts);
+
             if (!aSelectedContexts || aSelectedContexts.length === 0) {
-                MessageToast.show("No selection made.");
+                MessageToast.show("No items selected.");
                 return;
             }
 
             let mParameters = {
-                contexts: aSelectedContexts, // Pass the whole array, not a single element
+                contexts: aSelectedContexts[0],
                 label: 'Confirm',
                 invocationGrouping: true    
             };
 
-            this.editFlow.invokeAction('qualitycertificate.printForm', mParameters)
-                .then(function(result) {
-                    let response = result.getObject();
-                    if (!response || !response.value) {
-                        MessageToast.show("Error: No XML data received.");
-                        return;
+            var oStatusText = new Text({ text: "Fetching XML Data..." });
+            var oXMLDataTextArea = new TextArea({
+                width: "100%",
+                rows: 20,
+                editable: false,
+                value: ""
+            });
+
+            var oDialog = new Dialog({
+                title: "Inspection Lot XML Data",
+                content: [oStatusText, oXMLDataTextArea],
+                beginButton: new Button({
+                    text: "Close",
+                    press: function () {
+                        oDialog.close();
                     }
-
-                    let xmlData = response.value;
-                    console.log(xmlData);
-
-                    // Escape XML to display properly in HTML
-                    let escapedXml = encodeURIComponent(xmlData)
-                        .replace(/%3C/g, "&lt;")
-                        .replace(/%3E/g, "&gt;");
-
-                    // Create an HTML element to display XML
-                    const oHtml = new HTML({
-                        content: `<pre style="white-space: pre-wrap; word-wrap: break-word;">${escapedXml}</pre>`
-                    });
-
-                    let oDialog = new Dialog({
-                        title: 'Generated XML',
-                        contentWidth: "600px",
-                        contentHeight: "500px",
-                        verticalScrolling: true,
-                        content: oHtml,
-                        buttons: [
-                            new Button({
-                                text: 'Download XML',
-                                press: function () {
-                                    const blob = new Blob([xmlData], { type: 'application/xml' });
-                                    const xmlUrl = URL.createObjectURL(blob);
-                                    const link = document.createElement('a');
-                                    link.href = xmlUrl;
-                                    link.download = 'quality_certificate.xml';
-                                    document.body.appendChild(link); // Append to avoid Firefox issues
-                                    link.click();
-                                    document.body.removeChild(link); // Cleanup
-                                    URL.revokeObjectURL(xmlUrl); // Release memory
-                                }
-                            }),
-                            new Button({
-                                text: 'Close',
-                                press: function () {
-                                    oDialog.close();
-                                }
-                            })
-                        ],
-                        afterClose: function() {
-                            oDialog.destroy();
-                        }
-                    });
-
-                    oDialog.open();
                 })
-                .catch(function(error) {
-                    console.error("Error invoking action:", error);
-                    MessageToast.show("Failed to generate XML.");
+            });
+
+            oDialog.open();
+
+            this.editFlow.invokeAction('qualitycertificate.printForm', mParameters)
+                .then(function (result) {
+                    const xmlData = result.getObject().value; 
+                    oXMLDataTextArea.setValue(xmlData);
+                    oStatusText.setText("XML Data fetched successfully.");
+                })
+                .catch(function (error) {
+                    console.error("Error fetching XML data:", error);
+                    oStatusText.setText("Error fetching XML data.");
+                    MessageToast.show("Failed to fetch XML data.");
                 });
         }
     };

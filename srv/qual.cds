@@ -16,14 +16,14 @@ service qualitycertificate {
     entity inschar as projection on inspect.A_InspectionCharacteristic {
           key InspectionLot,
           InspectionCharacteristic,
-          InspectionSpecification,
+          InspectionSpecification
      }
 
      entity insres as projection on inspect.A_InspectionResult {
           key InspectionLot,
           InspectionResultMeanValue,
           InspectionResultMinimumValue,
-          InspectionResultMaximumValue,
+          InspectionResultMaximumValue
      }
  
 
@@ -32,7 +32,7 @@ service qualitycertificate {
           DeliveryDocumentItem,
           ReferenceSDDocument,
           ReferenceSDDocumentItem,
-          Material,
+          Material
      }  
 
      entity obaddr as projection on outbound.A_OutbDeliveryAddress2 {
@@ -47,7 +47,7 @@ service qualitycertificate {
 
     entity quality1 as projection on quality.quality1{
         *
-    } actions{
+    }actions{
         action printForm() returns String
     };
 

@@ -1,7 +1,7 @@
 using {qualitycertificate} from './qual';
 
 
-annotate qualitycertificate.numberrange with @(
+annotate qualitycertificate.NumberRange with @(
      UI.PresentationVariant :{
         SortOrder : [
             {
@@ -32,7 +32,7 @@ annotate qualitycertificate.numberrange with @(
 );
 
 
-annotate qualitycertificate.numberrange with @(
+annotate qualitycertificate.NumberRange with @(
     UI.FieldGroup #NumberRange : {
         $Type : 'UI.FieldGroupType',
         Data : [
