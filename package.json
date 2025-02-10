@@ -24,17 +24,29 @@
   },
   "cds": {
     "requires": {
-      "YY1_QUALITYCER1_CDS_0001": {
-        "kind": "odata-v2",
-        "model": "srv/external/YY1_QUALITYCER1_CDS_0001"
-      },
       "API_INSPECTIONLOT_SRV": {
         "kind": "odata-v2",
-        "model": "srv/external/API_INSPECTIONLOT_SRV"
+        "model": "srv/external/API_INSPECTIONLOT_SRV",
+        "csrf": true,
+        "csrfInBatch": true,
+        "[production]": {
+          "credentials": {
+            "destination": "S4HANA",
+            "path": "/sap/opu/odata/sap/API_INSPECTIONLOT_SRV"
+          }
+        }
       },
       "API_OUTBOUND_DELIVERY_SRV_0002": {
         "kind": "odata-v2",
-        "model": "srv/external/API_OUTBOUND_DELIVERY_SRV_0002"
+        "model": "srv/external/API_OUTBOUND_DELIVERY_SRV_0002",
+        "csrf": true,
+        "csrfInBatch": true,
+        "[production]": {
+          "credentials": {
+            "destination": "S4HANA",
+            "path": "/sap/opu/odata/sap/API_OUTBOUND_DELIVERY_SRV;v=0002"
+          }
+        }
       }
     }
   },

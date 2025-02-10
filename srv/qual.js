@@ -267,18 +267,30 @@ module.exports = cds.service.impl(async function () {
       const outboundtId = post[0].outbound;
       const outboundItem = post[0].outbounditem;
 
+      console.log("Outbound ID--->", outboundtId);
+      console.log("Outbound Item--->", outboundItem);
+
       const obItemQuery = await outbound.run(
         SELECT.from(obitem).where({ DeliveryDocument: outboundtId, DeliveryDocumentItem: outboundItem })
       );
+
+      console.log("Outbound Item--->", obItemQuery);
+      
       if (!obItemQuery.length) {
         console.error("Outbound item not found for outboundtId:", outboundtId);
         return req.error(404, "Outbound item not found");
       }
       const { ReferenceSDDocument, ReferenceSDDocumentItem } = obItemQuery[0];
 
+      console.log("ReferenceSDDocument--->", ReferenceSDDocument);
+      console.log("ReferenceSDDocumentItem--->", ReferenceSDDocumentItem);
+
       const insLotQuery = await inspect.run(
         SELECT.from(inslot).where({ SalesOrder: ReferenceSDDocument, SalesOrderItem: ReferenceSDDocumentItem })
       );
+
+      console.log("Inspection Lots--->", insLotQuery);
+
       if (!insLotQuery.length) {
         console.error("Inspection Lot not found for SalesOrder:", ReferenceSDDocument);
         return req.error(404, "Inspection Lot not found");
