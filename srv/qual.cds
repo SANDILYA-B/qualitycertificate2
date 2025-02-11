@@ -15,7 +15,7 @@ service qualitycertificate {
 
     entity inschar as projection on inspect.A_InspectionCharacteristic {
           key InspectionLot,
-          InspectionCharacteristic,
+          key InspectionCharacteristic,
           InspectionSpecification
      }
 
@@ -29,7 +29,7 @@ service qualitycertificate {
 
      entity obitem as projection on outbound.A_OutbDeliveryItem {
           key DeliveryDocument,
-          DeliveryDocumentItem,
+          key DeliveryDocumentItem,
           ReferenceSDDocument,
           ReferenceSDDocumentItem,
           Material
@@ -37,7 +37,7 @@ service qualitycertificate {
 
      entity obaddr as projection on outbound.A_OutbDeliveryAddress2 {
           key DeliveryDocument,
-          BusinessPartnerName1,
+          key BusinessPartnerName1,
           StreetName,
           CityName,
           Region,
